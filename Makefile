@@ -1,5 +1,5 @@
 CXX=g++
-CPPFLAGS=-Wall -g -std=c++2a
+CPPFLAGS=-Wall -g -O3 -std=c++2a
 INC=-I./src/include -I./src/include/asio
 LIBS=-pthread	# shouldn't use -lpthread
 

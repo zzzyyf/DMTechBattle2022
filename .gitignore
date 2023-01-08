@@ -1,3 +1,5 @@
 .vscode
-benchmark
+*.exe
 obj
+*.log
+*.txt

@@ -3,28 +3,39 @@
 
 using namespace dm;
 
-const u32 nn = 16;
+const u32 nn = 4;
 Client clients[nn];
 
 asio::io_context io_ctx;
 
-void divideInputToClients(const String& filename)
+bool divideInputToClients(const String& filename)
 {
     FILE* input = fopen(filename.c_str(), "r");
+    if (!input)
+    {
+        std::cout << "error opening file" << filename << ".\n";
+        return false;
+    }
+
     // get file size
     fseek(input, 0, SEEK_END);
     i64 len = ftell(input);
 
     i64 start_offsets[nn];
+    start_offsets[0] = 0;
+
     u32 i = 0;
     do
     {
         Client& cli = clients[i];
         cli.mId = i;
         FILE* f = fopen(filename.c_str(), "r");
-
-        cli.mStartOffset = start_offsets[i];
-        fseek(f, cli.mStartOffset, SEEK_SET);
+        if (!f)
+        {
+            std::cout << "error opening file" << filename << ".\n";
+            return false;
+        }
+        fseek(f, start_offsets[i], SEEK_SET);
         cli.mInput = f;
 
         i++;
@@ -38,17 +49,26 @@ void divideInputToClients(const String& filename)
             rslt = fread(&c, 1, 1, input);
         } while (rslt == 1 && c != '\n');
 
-        if (rslt == 1)
+        if (rslt != 1)
         {
-            assert(i == nn);
-            cli.mEndOffsetEx = len;
+            std::cout << "bad input file, please check the endline.\n";
+            return false;
+        }
+
+        if (i == nn)
+        {
+            cli.mTotalLen = len - start_offsets[i-1];
         }
         else
         {
-            cli.mEndOffsetEx = ftell(input);
-            start_offsets[i] = cli.mEndOffsetEx;
+            start_offsets[i] = ftell(input);
+            cli.mTotalLen = start_offsets[i] - start_offsets[i-1];
         }
+
+        std::cout << "client #" << i << " get " << cli.mTotalLen << " bytes.\n";
     } while (i < nn);
+
+    return true;
 }
 
 void connectTCPClient(const String& remote)
@@ -56,7 +76,7 @@ void connectTCPClient(const String& remote)
     asio::error_code c;
     tcp::resolver resolver(io_ctx);
     tcp::resolver::results_type endpoints =
-      resolver.resolve(remote, "daytime");
+      resolver.resolve(remote, "dmtb2022");
 
     std::shared_ptr<dm::socket> sock = std::make_shared<dm::socket>(io_ctx);
     sock->open(stream_protocol(AF_INET, IPPROTO_TCP));
@@ -83,5 +103,21 @@ void connectLocalClient(const String& remote)
 
 int main(int argc, char* argv[])
 {
+    bool rslt;
+    /*
+    rslt = generateInput("test.txt");
+    if (!rslt)
+        return 1;
+    */
+
+    rslt = divideInputToClients("test.txt");
+    if (!rslt)
+        return 1;
+
+    for (auto &cli : clients)
+    {
+        cli.run();
+        std::cout << "processed " << cli.mReqCount << " requests.\n";
+    }
     return 0;
 }

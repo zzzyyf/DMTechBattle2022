@@ -1,9 +1,11 @@
 #pragma once
+#include "asio/asio.hpp"
+
+#include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <iostream>
 #include <string>
-#include <cassert>
-#include "asio/asio.hpp"
 
 namespace dm {
 using u8 = uint8_t;
@@ -15,5 +17,9 @@ using String = std::string;
 using asio::ip::tcp;
 using asio::generic::stream_protocol;
 using socket = asio::generic::stream_protocol::socket;
+
+void moveToHead(char* buffer, char* pos, u32 len);
+
+bool generateInput(const String &filename);
 
 }   // end of namespace dm;

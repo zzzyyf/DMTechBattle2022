@@ -8,5 +8,12 @@
 
 namespace dm {
 
+void moveToHead(char* buffer, char* pos, u32 len)
+{
+    for (u32 i = 0; i < len; ++i)
+    {
+        buffer[i] = pos[i];
+    }
+}
 
 }   // end of namespace dm;
