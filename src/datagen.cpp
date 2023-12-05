@@ -1,4 +1,6 @@
-#include "common.h"
+#include "Common.h"
+#include <ios>
+#include <sstream>
 #include <sys/random.h>
 #include <random>
 
@@ -13,7 +15,7 @@ u64 getRandomU64()
     return distrib(gen);
 }
 
-const u32 nn = 100000;
+const u32 nn = 1'000'000;
 
 bool generateInput(const String &filename)
 {
@@ -24,19 +26,21 @@ bool generateInput(const String &filename)
         return false;
     }
 
+    std::stringstream ss;
     for (u32 i = 0; i < nn; ++i)
     {
-        u64 n_num = getRandomU64() % 1000 + 1;
+        u64 n_num = getRandomU64() % (1000 - 16) + 16;
 
         for (u32 j = 0; j < n_num; j++)
         {
-            String numstr = std::to_string(getRandomU64());
+            ss << getRandomU64();
             if (j != n_num - 1)
-                numstr += ',';
-            fwrite(numstr.data(), numstr.size(), 1, file);
+                ss << ',';
         }
+        ss << "\r\n";
 
-        fwrite("\r\n", 2, 1, file);
+        String &&str = std::move(ss).str();
+        fwrite(str.data(), str.size(), 1, file);
     }
 
     fclose(file);

@@ -1,5 +1,7 @@
 .vscode
 *.exe
-obj
+obj/*
 *.log
 *.txt
+.cache
+compile_commands.json

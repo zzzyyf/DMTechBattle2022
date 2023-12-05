@@ -4,16 +4,9 @@
  * 3. epoll 网络通信（支持 unix domain socket 和普通 tcp socket）
  * 4. 解析响应（u32结果数 + 结果列表）
 */
-#include "client.h"
+#include "Client.h"
 
 namespace dm {
 
-void moveToHead(char* buffer, char* pos, u32 len)
-{
-    for (u32 i = 0; i < len; ++i)
-    {
-        buffer[i] = pos[i];
-    }
-}
 
 }   // end of namespace dm;

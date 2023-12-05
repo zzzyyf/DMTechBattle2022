@@ -1,10 +1,11 @@
-#include "common.h"
-#include "client.h"
+#include "Common.h"
+#include "Client.h"
+#include "Debug.h"
 
 using namespace dm;
 
-const u32 nn = 4;
-Client clients[nn];
+const u32 nn = 1;
+Client clients2[nn];
 
 asio::io_context io_ctx;
 
@@ -20,6 +21,11 @@ bool divideInputToClients(const String& filename)
     // get file size
     fseek(input, 0, SEEK_END);
     i64 len = ftell(input);
+    if (len == 0)
+    {
+        std::cout << "input file " << filename << " is empty.\n";
+        return false;
+    }
 
     i64 start_offsets[nn];
     start_offsets[0] = 0;
@@ -27,8 +33,8 @@ bool divideInputToClients(const String& filename)
     u32 i = 0;
     do
     {
-        Client& cli = clients[i];
-        cli.mId = i;
+        Client& cli2 = clients2[i];
+        cli2.mId = i;
         FILE* f = fopen(filename.c_str(), "r");
         if (!f)
         {
@@ -36,36 +42,44 @@ bool divideInputToClients(const String& filename)
             return false;
         }
         fseek(f, start_offsets[i], SEEK_SET);
-        cli.mInput = f;
+
+        if (!cli2.setInput(f, start_offsets[i]))
+            assert_r(false, false);
 
         i++;
 
         // find end offset (exclusive) of this client (i.e. begin offset of the next client)
-        fseek(input, i * (len / nn), SEEK_SET);
-        char c;
+        i64 seek_pos = i * (len / nn);
+        if (seek_pos == len)    // at least try to read the last char
+        {
+            seek_pos--;
+        }
+        fseek(input, seek_pos, SEEK_SET);
+
+        char c = 0;
         i32 rslt;
         do
         {
             rslt = fread(&c, 1, 1, input);
-        } while (rslt == 1 && c != '\n');
+            if (rslt != 1)
+            {
+                std::cout << "bad input file, please check the endline.\n";
+                return false;
+            }
+        } while (c != '\n');
 
-        if (rslt != 1)
-        {
-            std::cout << "bad input file, please check the endline.\n";
-            return false;
-        }
-
+        u32 part_len;
         if (i == nn)
         {
-            cli.mTotalLen = len - start_offsets[i-1];
+            part_len = len - start_offsets[i-1];
         }
         else
         {
             start_offsets[i] = ftell(input);
-            cli.mTotalLen = start_offsets[i] - start_offsets[i-1];
+            part_len = start_offsets[i] - start_offsets[i-1];
         }
 
-        std::cout << "client #" << i << " get " << cli.mTotalLen << " bytes.\n";
+        std::cout << "client #" << i << " get " << part_len << " bytes.\n";
     } while (i < nn);
 
     return true;
@@ -80,7 +94,7 @@ void connectTCPClient(const String& remote)
 
     std::shared_ptr<dm::socket> sock = std::make_shared<dm::socket>(io_ctx);
     sock->open(stream_protocol(AF_INET, IPPROTO_TCP));
-    
+
     for (auto &ep : endpoints)
     {
         sock->connect(ep.endpoint(), c);
@@ -91,11 +105,11 @@ void connectTCPClient(const String& remote)
 void connectLocalClient(const String& remote)
 {
     asio::error_code c;
-    dm::socket s(io_ctx); 
-    
+    dm::socket s(io_ctx);
+
     std::shared_ptr<dm::socket> sock = std::make_shared<dm::socket>(io_ctx);
     sock->open(stream_protocol(AF_UNIX, 0), c);
-    
+
     auto ep = asio::local::stream_protocol::endpoint(remote);
     sock->connect(ep, c);
 }
@@ -104,20 +118,25 @@ void connectLocalClient(const String& remote)
 int main(int argc, char* argv[])
 {
     bool rslt;
-    /*
-    rslt = generateInput("test.txt");
-    if (!rslt)
-        return 1;
-    */
+
+    // rslt = generateInput("test.txt");
+    // if (!rslt)
+    //     return 1;
 
     rslt = divideInputToClients("test.txt");
     if (!rslt)
         return 1;
 
-    for (auto &cli : clients)
+    i64 interval;
     {
-        cli.run();
-        std::cout << "processed " << cli.mReqCount << " requests.\n";
+        ScopeCounter counter(interval);
+        for (u32 i = 0; i < nn; i++)
+        {
+            clients2[i].run();
+            std::cout << "processed " << clients2[i].mReqCount << " requests.\n";
+        }
     }
+    std::cout << "Client cost " << interval << " milliseconds." << std::endl;
+
     return 0;
 }

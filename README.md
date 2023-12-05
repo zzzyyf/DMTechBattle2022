@@ -5,6 +5,10 @@
 编译：
 ```bash
 make build
+
+# generate compile_commands.json for clangd
+make clean
+bear -- make
 ```
 
 ## 题目要求
@@ -20,6 +24,7 @@ make build
 ## 思路
 1. 本地进程间通信可以使用 unix domain socket
 2. 服务端计算和发送结果耗时相对小，瓶颈估计在客户端的请求产生和发送
+    - 输入数据随机，压缩收益不大
 3. 并行处理较容易
     1. 客户端解析数据可以直接按文件大小均分起始位置，从第一个完整行开始
     2. 每个客户端线程对应一个客户端连接，对应一个服务端连接和服务端线程

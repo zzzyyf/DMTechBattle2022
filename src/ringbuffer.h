@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h"
+#include "Common.h"
 
 namespace dm {
 class RingBuffer
@@ -42,7 +42,7 @@ public:
     {
         if (size > mSize || size == 0)
             return 0;
-        
+
         u32 nread = std::min(size, mCapacity - mReadPos);
         memcpy(dst, &mData[mReadPos], nread);
         size -= nread;
@@ -65,7 +65,7 @@ public:
     {
         if (size > mSize || size == 0)
             return 0;
-        
+
         u32 nread = std::min(size, mCapacity - itr);
         memcpy(dst, &mData[itr], nread);
         size -= nread;
@@ -103,7 +103,7 @@ public:
     {
         if (mCapacity - mSize < size || size == 0)
             return 0;
-        
+
         u32 nwrite = std::min(size, mCapacity - mWritePos);
         memcpy(&mData[mWritePos], src, nwrite);
         size -= nwrite;
@@ -128,12 +128,12 @@ public:
         u32 max_write = std::min(mCapacity - mWritePos, mCapacity - mSize);
         if (max_write < size || size == 0)
             return 0;
-        
+
         memcpy(&mData[mWritePos], src, size);
         mWritePos += size;
         if (mWritePos == mCapacity)
             mWritePos = 0;
-        
+
         mSize += size;
         return size;
     }
@@ -145,7 +145,7 @@ public:
         mWritePos += size;
         if (mWritePos == mCapacity)
             mWritePos = 0;
-        
+
         mSize += size;
     }
 

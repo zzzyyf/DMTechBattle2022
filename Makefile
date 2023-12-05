@@ -1,6 +1,9 @@
 CXX=g++
-CPPFLAGS=-Wall -g -O3 -std=c++2a
-INC=-I./src/include -I./src/include/asio
+CPPFLAGS=-Wall -g -std=c++2a
+
+DBGFLAGS=-O3 -DNDEBUG
+
+INC=-Isrc/asio
 LIBS=-pthread	# shouldn't use -lpthread
 
 SRCDIR=./src
@@ -16,7 +19,7 @@ build : $(OBJS)
 	$(CXX) $(LIBS) -o $(TARGET) $(OBJS)
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
-	$(CXX) $(CPPFLAGS) $(INC) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(DBGFLAGS) $(INC) -c $< -o $@
 
 .PHONY: clean
 clean :
