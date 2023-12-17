@@ -4,12 +4,14 @@
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <string_view>
 
 namespace dm {
 
 using u8 = uint8_t;
+using u16 = uint16_t;
 using i32 = int32_t;
 using u32 = uint32_t;
 using i64 = int64_t;
@@ -18,10 +20,14 @@ using u64 = uint64_t;
 using String = std::string;
 using StringRef = std::basic_string_view<char>;
 
+template<class T>
+using Ptr = std::shared_ptr<T>;
+
 using asio::ip::tcp;
 using asio::generic::stream_protocol;
-using socket = asio::generic::stream_protocol::socket;
+using Socket = asio::generic::stream_protocol::socket;
 
+#define DM_SERVICE_PORT 20230
 
 inline void moveToHead(char* buffer, char* pos, u32 len)
 {

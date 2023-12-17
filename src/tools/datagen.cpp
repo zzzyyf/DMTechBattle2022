@@ -48,3 +48,13 @@ bool generateInput(const String &filename)
 }
 
 }   // end of namespace dm;
+
+
+int main(int argc, char* argv[])
+{
+    bool rslt = dm::generateInput("test.txt");
+    if (!rslt)
+        return 1;
+
+    return 0;
+}

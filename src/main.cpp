@@ -85,35 +85,6 @@ bool divideInputToClients(const String& filename)
     return true;
 }
 
-void connectTCPClient(const String& remote)
-{
-    asio::error_code c;
-    tcp::resolver resolver(io_ctx);
-    tcp::resolver::results_type endpoints =
-      resolver.resolve(remote, "dmtb2022");
-
-    std::shared_ptr<dm::socket> sock = std::make_shared<dm::socket>(io_ctx);
-    sock->open(stream_protocol(AF_INET, IPPROTO_TCP));
-
-    for (auto &ep : endpoints)
-    {
-        sock->connect(ep.endpoint(), c);
-        if (!c) break;
-    }
-}
-
-void connectLocalClient(const String& remote)
-{
-    asio::error_code c;
-    dm::socket s(io_ctx);
-
-    std::shared_ptr<dm::socket> sock = std::make_shared<dm::socket>(io_ctx);
-    sock->open(stream_protocol(AF_UNIX, 0), c);
-
-    auto ep = asio::local::stream_protocol::endpoint(remote);
-    sock->connect(ep, c);
-}
-
 
 int main(int argc, char* argv[])
 {

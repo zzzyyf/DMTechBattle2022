@@ -20,7 +20,7 @@ public:
     FILE* mInput{nullptr};   // input file handler
     FILE* mOutput{nullptr};  // output file handler
 
-    std::shared_ptr<dm::socket> mSocket{nullptr};
+    Ptr<dm::Socket> mSocket{nullptr};
 
     char* mRequestBuffer{nullptr};
     static constexpr u32 mRequestBufferSize = 16 * 1024 * 1024;

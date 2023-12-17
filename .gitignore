@@ -1,6 +1,6 @@
 .vscode
 *.exe
-obj/*
+obj
 *.log
 *.txt
 .cache
